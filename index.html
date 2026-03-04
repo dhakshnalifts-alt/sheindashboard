@@ -4,30 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHEIN TRACE | Dashboard</title>
-    <!-- 1. Tailwind for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 2. React Core -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- 3. Helper for Charts (This was likely the missing piece!) -->
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
     <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-    <!-- 4. Babel to make it run in browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        #root:empty::before { content: "Loading Dashboard... Please wait."; padding: 20px; display: block; }
+        body { font-family: 'Inter', sans-serif; transition: all 0.5s ease; }
+        .executive-bg { background-color: #f8fafc; }
+        .consumer-bg { background-color: #f0fdf4; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState } = React;
-        const { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } = Recharts;
+        const { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } = Recharts;
 
-        // --- Mock Data ---
+        // --- Data ---
         const supplierData = [
             { name: 'Grade A', value: 45, color: '#000000' },
             { name: 'Grade B', value: 33, color: '#3b82f6' },
@@ -35,93 +32,150 @@
             { name: 'Failed', value: 7, color: '#ef4444' },
         ];
 
+        const consumerImpactData = [
+            { name: 'Recycled Poly', value: 40, fill: '#22c55e' },
+            { name: 'Organic Cotton', value: 30, fill: '#4ade80' },
+            { name: 'Standard Poly', value: 30, fill: '#e2e8f0' },
+        ];
+
         const carbonData = [
-            { year: '2021', emissions: 18.2, target: 20.0 },
-            { year: '2022', emissions: 21.5, target: 19.5 },
-            { year: '2023', emissions: 24.8, target: 18.0 },
-            { year: '2024', emissions: 26.2, target: 16.5 },
+            { year: '2021', emissions: 18.2 },
+            { year: '2022', emissions: 21.5 },
+            { year: '2023', emissions: 24.8 },
+            { year: '2024', emissions: 26.2 },
         ];
 
         const Dashboard = () => {
             const [view, setView] = useState('Executive');
+            const isExec = view === 'Executive';
 
             return (
-                <div className="min-h-screen pb-10">
-                    <nav className="bg-white border-b px-6 py-4 mb-8">
+                <div className={`min-h-screen pb-10 ${isExec ? 'executive-bg' : 'consumer-bg'}`}>
+                    {/* NAV BAR - Color changes based on view */}
+                    <nav className={`${isExec ? 'bg-white' : 'bg-green-600'} border-b px-6 py-4 mb-8 shadow-md`}>
                         <div className="max-w-6xl mx-auto flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                                <span className="bg-black text-white px-3 py-1 font-black italic text-lg">SHEIN</span>
-                                <span className="text-blue-600 font-bold underline text-lg">TRACE</span>
+                                <span className={`${isExec ? 'bg-black text-white' : 'bg-white text-green-700'} px-3 py-1 font-black italic text-lg`}>SHEIN</span>
+                                <span className={`${isExec ? 'text-blue-600' : 'text-white'} font-bold underline text-lg`}>TRACE</span>
                             </div>
                             <button 
-                                onClick={() => setView(view === 'Executive' ? 'Consumer' : 'Executive')}
-                                className="bg-black text-white px-5 py-2 rounded-full text-xs font-bold hover:bg-gray-800 transition"
+                                onClick={() => setView(isExec ? 'Consumer' : 'Executive')}
+                                className={`${isExec ? 'bg-black text-white' : 'bg-white text-green-700'} px-6 py-2 rounded-full text-xs font-black shadow-lg hover:scale-105 transition-transform`}
                             >
-                                SWITCH TO {view === 'Executive' ? 'CONSUMER' : 'EXECUTIVE'} VIEW
+                                SWITCH TO {isExec ? 'CONSUMER' : 'EXECUTIVE'} VIEW
                             </button>
                         </div>
                     </nav>
 
                     <main className="max-w-6xl mx-auto px-6">
-                        <div className="mb-10">
-                            <h1 className="text-4xl font-black">{view} Insight</h1>
-                            <p className="text-gray-500 font-medium italic mt-2">Live ESG Compliance & Supply Chain Transparency Tracking.</p>
+                        <div className="mb-10 text-center md:text-left">
+                            <h1 className={`text-5xl font-black ${isExec ? 'text-slate-900' : 'text-green-800'}`}>
+                                {isExec ? "Global Compliance Engine" : "Your Impact Matters"}
+                            </h1>
+                            <p className="text-slate-500 font-medium italic mt-2">
+                                {isExec ? "Real-time monitoring of regulatory and supply chain risk." : "Tracking how we make your clothes better for the planet."}
+                            </p>
                         </div>
 
-                        {/* Top Stats */}
+                        {/* STAT CARDS - Content changes based on view */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                            <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Supplier Audits</p>
-                                <h2 className="text-4xl font-black mt-2">78.4%</h2>
-                                <p className="text-green-500 font-bold text-sm mt-3">↑ +12% improvement</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Carbon Impact</p>
-                                <h2 className="text-4xl font-black mt-2">26.2M</h2>
-                                <p className="text-red-500 font-bold text-sm mt-3">⚠ Critical Rise</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-3xl border shadow-sm">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Regulatory Status</p>
-                                <h2 className="text-4xl font-black mt-2 text-orange-500">PENDING</h2>
-                                <p className="text-gray-400 font-bold text-sm mt-3">EU Audit Oct 2024</p>
-                            </div>
+                            {isExec ? (
+                                <>
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-xl">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Audit Score</p>
+                                        <h2 className="text-4xl font-black mt-2">78.4%</h2>
+                                        <p className="text-green-600 font-bold text-sm mt-3">↑ Higher Audit Velocity</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-red-100 shadow-xl">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Carbon Risk</p>
+                                        <h2 className="text-4xl font-black mt-2 text-red-600">HIGH</h2>
+                                        <p className="text-red-500 font-bold text-sm mt-3">⚠ 26.2M mt Output</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-slate-100 shadow-xl text-orange-600">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Legal Status</p>
+                                        <h2 className="text-4xl font-black mt-2">PENDING</h2>
+                                        <p className="text-slate-400 font-bold text-sm mt-3 font-mono">FR/EU AUDIT: OCT 2024</p>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-green-100 shadow-xl">
+                                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Better Materials</p>
+                                        <h2 className="text-4xl font-black mt-2">15.2%</h2>
+                                        <p className="text-green-500 font-bold text-sm mt-3">Verified Recycled Content</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-green-100 shadow-xl">
+                                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Traceability</p>
+                                        <h2 className="text-4xl font-black mt-2">90%</h2>
+                                        <p className="text-green-500 font-bold text-sm mt-3">Factories Verified by Third Party</p>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-3xl border-2 border-green-100 shadow-xl">
+                                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Water Saved</p>
+                                        <h2 className="text-4xl font-black mt-2">1.2M L</h2>
+                                        <p className="text-green-500 font-bold text-sm mt-3">Digital Printing Efficiency</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        {/* Charts Area */}
+                        {/* CHARTS - Content changes focus based on view */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                            <div className="bg-white p-8 rounded-3xl border shadow-sm">
-                                <h3 className="text-xl font-black mb-6">Emissions Growth vs 2030 Target</h3>
+                            <div className="bg-white p-8 rounded-3xl border shadow-lg">
+                                <h3 className="text-xl font-black mb-6">{isExec ? "Carbon Growth vs Targets" : "Our Renewable Energy Path"}</h3>
                                 <div style={{ width: '100%', height: 300 }}>
                                     <ResponsiveContainer>
                                         <LineChart data={carbonData}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                             <XAxis dataKey="year" axisLine={false} tickLine={false} />
                                             <YAxis axisLine={false} tickLine={false} />
                                             <Tooltip />
-                                            <Line type="monotone" dataKey="emissions" stroke="#ef4444" strokeWidth={4} name="Actual mtCO2" />
-                                            <Line type="dashed" dataKey="target" stroke="#10b981" strokeDasharray="5 5" name="Target" />
+                                            <Line type="monotone" dataKey="emissions" stroke={isExec ? "#ef4444" : "#22c55e"} strokeWidth={5} dot={{r: 6}} />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
-                            <div className="bg-white p-8 rounded-3xl border shadow-sm">
-                                <h3 className="text-xl font-black mb-6">Supplier ESG Rating (Internal)</h3>
+                            <div className="bg-white p-8 rounded-3xl border shadow-lg">
+                                <h3 className="text-xl font-black mb-6">{isExec ? "Supplier Risk Distribution" : "Sustainable Material Mix"}</h3>
                                 <div style={{ width: '100%', height: 300 }}>
                                     <ResponsiveContainer>
-                                        <BarChart data={supplierData}>
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                                            <YAxis hide />
-                                            <Tooltip cursor={{fill: '#f9fafb'}} />
-                                            <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                                                {supplierData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                                ))}
-                                            </Bar>
-                                        </BarChart>
+                                        {isExec ? (
+                                            <BarChart data={supplierData}>
+                                                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                                                <YAxis hide />
+                                                <Tooltip cursor={{fill: '#f8fafc'}} />
+                                                <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                                                    {supplierData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                                    ))}
+                                                </Bar>
+                                            </BarChart>
+                                        ) : (
+                                            <PieChart>
+                                                <Pie data={consumerImpactData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label>
+                                                    {consumerImpactData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        )}
                                     </ResponsiveContainer>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* VIEW-SPECIFIC FOOTER */}
+                        <div className={`mt-10 p-8 rounded-3xl flex flex-col md:flex-row justify-between items-center ${isExec ? 'bg-slate-900 text-white' : 'bg-green-100 text-green-900 border-2 border-green-200'}`}>
+                            <div>
+                                <h4 className="font-black text-xl mb-1">{isExec ? "⚠ Critical Risk Detected" : "🌿 Clean-Fashion Milestone"}</h4>
+                                <p className={isExec ? "text-slate-400" : "text-green-700 font-medium"}>
+                                    {isExec ? "Predicted French regulatory fine: €40.5M based on current waste projections." : "We've reached 40% recycled materials in our MOTF collection!"}
+                                </p>
+                            </div>
+                            <button className={`mt-4 md:mt-0 px-8 py-3 rounded-full font-black text-sm ${isExec ? 'bg-white text-black' : 'bg-green-700 text-white shadow-lg shadow-green-200'}`}>
+                                {isExec ? "MITIGATION PLAN" : "LEARN MORE"}
+                            </button>
                         </div>
                     </main>
                 </div>
